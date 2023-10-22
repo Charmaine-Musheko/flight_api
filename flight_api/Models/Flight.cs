@@ -13,11 +13,11 @@ namespace flight_api.Models
         public string AirportName { get; set; }
         public string DepartureLocation { get; set; }
         public string Destination { get; set; }
-        public string DepartureTime { get; set; }
-        public string ArrivalTime { get; set; }
-        public string FlightDate { get; set; }
-        public string DepartureDate { get; set; }
-        public string ArrivalDate { get; set; }
+       public string DepartureTime { get; set; }
+public string ArrivalTime { get; set; }
+public string FlightDate { get; set; }
+public string DepartureDate { get; set; }
+public string ArrivalDate { get; set; }
 
         public string TicketNumber { get; set; }
 

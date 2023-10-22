@@ -4,6 +4,7 @@ using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
 using flight_api.Models;
+using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Configuration;
@@ -13,6 +14,7 @@ using Microsoft.Extensions.Configuration;
 
 namespace flight_api.Controllers
 {
+    [EnableCors("AllowSpecificOrigin")]
     [Route("api/User")]
 
     public class UserController : Microsoft.AspNetCore.Mvc.Controller
@@ -101,14 +103,65 @@ namespace flight_api.Controllers
                 }
             }
         }
-                
+
+
+        
+        // Login endpoint
+        [HttpPost("Login")]
+        public async Task<IActionResult> Login([FromBody] Login loginRequest)
+        {
+            try
+            {
+                var connectionString = _configuration.GetConnectionString("sqlconnect");
+
+                using (var connection = new SqlConnection(connectionString))
+                {
+                    connection.Open();
+
+                    using (var command = new SqlCommand("UserLogin", connection))
+                    {
+                        command.CommandType = CommandType.StoredProcedure;
+                        command.Parameters.AddWithValue("@email", loginRequest.Email);
+                        command.Parameters.AddWithValue("@password", loginRequest.Password); // Ensure you hash the password in your application
+
+                        using (var reader = await command.ExecuteReaderAsync())
+                        {
+                            if (reader.Read())
+                            {
+                                var user = new User
+                                {
+                                    user_id = (int)reader["user_id"],
+                                    first_name = (string)reader["first_name"],
+                                    last_name = (string)reader["last_name"],
+                                    email = (string)reader["email"],
+                                    address = (string)reader["address"]
+                                };
+
+                                return Ok(user);
+                            }
+                            else
+                            {
+                                return BadRequest("Invalid email or password");
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "An error occurred: " + ex.Message);
+            }
+        }
+
+
+    
 
 
 
 
-                // POST api/values
+        // POST api/values
 
-                [HttpPost("CreateUser")]
+        [HttpPost("CreateUser")]
         public async Task<IActionResult> CreateUser([FromBody] User user)
         {
             using (var connection = new SqlConnection(_configuration.GetConnectionString("sqlconnect")))
